@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pricing Card Component</title>
+  <script>
+    // Define the custom pricing-card element
+    class PricingCard extends HTMLElement {
+      constructor() {
+        super();
+        const shadow = this.attachShadow({ mode: 'open' });
+
+        // Style
+        const style = document.createElement('style');
+        style.textContent = `
+          .pricing {
+            width: 300px;
+            margin: 50px auto;
+            background-color: #fff;
+            box-shadow: 0 0 10px #ccc;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: sans-serif;
+            text-align: left;
+          }
+          .title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+          }
+          .price {
+            font-size: 18px;
+            color: green;
+            margin-bottom: 15px;
+          }
+          .features {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 15px;
+          }
+          .features li {
+            padding: 6px 0;
+            border-bottom: 1px solid #eee;
+          }
+          .btn {
+            background: blue;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+          }
+          .btn:hover {
+            background: darkblue;
+          }
+        `;
+        shadow.appendChild(style);
+
+        // Markup
+        const wrapper = document.createElement('div');
+        wrapper.className = 'pricing';
+        wrapper.innerHTML = `
+          <h2 class="title"></h2>
+          <p class="price"></p>
+          <ul class="features"></ul>
+          <button class="btn">Start Trial</button>
+        `;
+        shadow.appendChild(wrapper);
+      }
+
+      // Watch these attributes for changes
+      static get observedAttributes() {
+        return ['title', 'price', 'features'];
+      }
+
+      // When attributes change, update UI
+      attributeChangedCallback(name, oldValue, newValue) {
+        if (!this.shadowRoot) return;
+        if (name === 'title') {
+          this.shadowRoot.querySelector('.title').textContent = newValue;
+        } else if (name === 'price') {
+          this.shadowRoot.querySelector('.price').textContent = newValue;
+        } else if (name === 'features') {
+          this.updateFeaturesList(newValue);
+        }
+      }
+
+      // When component is connected to DOM
+      connectedCallback() {
+        if (this.hasAttribute('title')) {
+          this.shadowRoot.querySelector('.title').textContent = this.getAttribute('title');
+        }
+        if (this.hasAttribute('price')) {
+          this.shadowRoot.querySelector('.price').textContent = this.getAttribute('price');
+        }
+        if (this.hasAttribute('features')) {
+          this.updateFeaturesList(this.getAttribute('features'));
+        }
+      }
+
+      // Parse and display the features
+      updateFeaturesList(featuresJSON) {
+        const featuresList = this.shadowRoot.querySelector('.features');
+        featuresList.innerHTML = '';
+        try {
+          const features = JSON.parse(featuresJSON);
+          features.forEach(feature => {
+            const li = document.createElement('li');
+            li.textContent = feature;
+            featuresList.appendChild(li);
+          });
+        } catch {
+          featuresList.innerHTML = '<li>Invalid features</li>';
+        }
+      }
+    }
+
+    // Register the custom element
+    customElements.define('pricing-card', PricingCard);
+  </script>
+</head>
+<body>
+  <!-- Usage of the custom pricing-card component -->
+  <pricing-card
+    title="Basic Plan"
+    price="$9.99 /month"
+    features='["1 GB Storage", "Basic Support", "All Core Features"]'>
+  </pricing-card>
+</body>
+</html>
